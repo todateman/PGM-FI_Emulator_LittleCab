@@ -71,29 +71,31 @@ void setup(){
 }
 
 void loop(){
-  int Value_HTL = analogRead( Volume_THL );
-  int RPM = map(Value_HTL, 0, 1023, 0, 10000);
 
   uint8_t i = 0;
   //uint32_t pulseHigh = 500;//1700RPM
   //uint32_t pulseLow = 2500;//1700RPM
-  uint32_t pulseHigh = 60 / RPM * 1000 / 12 * (5 / 30);
-  uint32_t pulseLow =  60 / RPM * 1000 / 12 - pulseHigh;
-  
-  Serial.print(F("rpm: "));
-  Serial.println(RPM);
-
-  // I2c
-  display.clearDisplay();
-  display.setTextSize(2);             // Normal 1:1 pixel scale
-  display.setTextColor(SSD1306_WHITE);        // Draw white text
-  display.setCursor(0,0);             // Start at top-left corner
-  display.print(RPM);
-  display.println(F(" rpm"));
-  display.display();
 
   //generate crank pulse
   while(1){
+    int Value_HTL = analogRead( Volume_THL );
+    int RPM = map(Value_HTL, 0, 1023, 0, 10000);
+
+    uint32_t pulseHigh = 60 / RPM * 1000 / 12 * (5 / 30);
+    uint32_t pulseLow =  60 / RPM * 1000 / 12 - pulseHigh;
+  
+    Serial.print(F("rpm: "));
+    Serial.println(RPM);
+
+    // I2c
+    display.clearDisplay();
+    display.setTextSize(2);             // Normal 1:1 pixel scale
+    display.setTextColor(SSD1306_WHITE);        // Draw white text
+    display.setCursor(0,0);             // Start at top-left corner
+    display.print(RPM);
+    display.println(F(" rpm"));
+    display.display();
+
     for(i=0; i<12; i++){
       if(i < 9){
         digitalWrite(PCP, HIGH);
