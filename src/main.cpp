@@ -6,7 +6,7 @@
  
 #include <Arduino.h>
 
-// I2c外部ディスプレイの設定
+// I2c外部ディスプレイの設定(A4:SDA A5:SCL)
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
