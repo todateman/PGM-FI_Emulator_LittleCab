@@ -97,7 +97,7 @@ void TaskAnalogRead(void *pvParameters) {
     int RPM = map(sensorValue, 0, 1023, 1, 100) * 100;
     Serial.println(RPM);
 
-    xQueueSend(integerQueue, &RPM, portMAX_DELAY);
+    xQueueOverwrite(integerQueue, &RPM);
 
     // One tick delay (15ms) in between reads for stability
     vTaskDelay(1);
@@ -113,9 +113,9 @@ void TaskSignal(void *pvParameters) {
   //xLastWakeTime = xTaskGetTickCount();
   for (;;){
     uint8_t i = 0;
-    if (xQueueReceive(integerQueue, &RPM, portMAX_DELAY) == pdPASS) {
-      int pulseHigh = 10000 / 12 / RPM;        //pulseHigh = 60 / RPM * 1000 / 12 * (5 / 30);
-      int pulseLow = 5000 / RPM - pulseHigh;   //pulseLow = (60 / RPM * 1000 / 12) - pulseHigh;
+    if (xQueuePeek(integerQueue, &RPM, portMAX_DELAY) == pdPASS) {
+      int pulseHigh = 10000 / 12 / RPM * 1000;        //pulseHigh = 60 / RPM * 1000 / 12 * (5 / 30);
+      int pulseLow = 5000 / RPM * 1000 - pulseHigh;   //pulseLow = (60 / RPM * 1000 / 12) - pulseHigh;
       
       for(i=0; i<12; i++){
         if(i < 9){
