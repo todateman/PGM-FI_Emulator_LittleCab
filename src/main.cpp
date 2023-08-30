@@ -46,7 +46,7 @@ void Volune_Tune(){
   digitalWrite(LED_BUILTIN, LOW);
 
   uint16_t Value_HTL = analogRead( A0 );
-  RPM = map(Value_HTL, 0, 1023, 0, 100) * 100;
+  RPM = map(Value_HTL, 0, 1023, 3, 100) * 100;  // delayMicrosecondsが16383usec以上は正常に動かないため、下限を300rpm(OFF時間13889usec)に制限
   RPM_Calc();
 }
 
