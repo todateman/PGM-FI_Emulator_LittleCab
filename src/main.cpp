@@ -33,6 +33,23 @@ static int uart_putchar(char c, FILE *stream) {
   }
 }
 
+void RPM_Calc(){
+  pulseHigh = 10000000 / 12 / RPM;        //pulseHigh = 60 / RPM * 1000 / 12 * (5 / 30) * 1000;
+  pulseLow = 5000000 / RPM - pulseHigh;   //pulseLow = (60 / RPM * 1000 / 12) * 1000 - pulseHigh;
+
+  Serial.print("RPM: ");
+  Serial.println(RPM);
+}
+
+void Volune_Tune(){
+  digitalWrite(PCP, LOW);
+  digitalWrite(LED_BUILTIN, LOW);
+
+  uint16_t Value_HTL = analogRead( A0 );
+  RPM = map(Value_HTL, 0, 1023, 0, 100) * 100;
+  RPM_Calc();
+}
+
 void setup(){
   //forDebug
   fdev_setup_stream(&uartout, uart_putchar, NULL, _FDEV_SETUP_WRITE);
@@ -46,7 +63,8 @@ void setup(){
   for(uint8_t i = 0; i<sizeof(analogOutPins); i++){
     pinMode(analogOutPins[i], OUTPUT);
   }
-  pinMode(PCP, OUTPUT); //CrankPulse
+  pinMode(PCP, OUTPUT); // CrankPulse
+  pinMode(2, INPUT_PULLUP);  // RPM_Tune_ON
   
   // sensor initial value
   analogWrite(SENSOR_O2, 25); //0-1v(0-51)
@@ -55,8 +73,9 @@ void setup(){
   analogWrite(SENSOR_TO, 138); //2.7-3.1V(138-158)
   analogWrite(SENSOR_PB, 138); //2.7-3.1V(138-158)
   
-  pulseHigh = 10000000 / 12 / RPM;        //pulseHigh = 60 / RPM * 1000 / 12 * (5 / 30) * 1000;
-  pulseLow = 5000000 / RPM - pulseHigh;   //pulseLow = (60 / RPM * 1000 / 12) * 1000 - pulseHigh;
+  RPM_Calc();
+
+  attachInterrupt(digitalPinToInterrupt(2), Volune_Tune, LOW);
 }
 
 void loop(){
@@ -70,11 +89,13 @@ void loop(){
     for(i=0; i<12; i++){
       if(i < 9){
         digitalWrite(PCP, HIGH);
+        digitalWrite(LED_BUILTIN, HIGH);
       }
       delayMicroseconds(pulseHigh);
  
       if(i < 9){
         digitalWrite(PCP, LOW);
+        digitalWrite(LED_BUILTIN, LOW);
       }
       delayMicroseconds(pulseLow);
     }
