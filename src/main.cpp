@@ -4,7 +4,10 @@
 * PGM-FI Emulator
 */
 
+#include <Adafruit_GFX.h>    // Core graphics library
+#include <Adafruit_ST7789.h> // Hardware-specific library for ST7789
 #include <Arduino.h>
+#include <SPI.h>
 
 #define SERIAL_RATE 9600
 #define SERIAL_TIMEOUT 1000
@@ -12,16 +15,28 @@
 #define SENSOR_O2 3
 #define SENSOR_THL 5
 #define SENSOR_TA 6
-#define SENSOR_TO 9
-#define SENSOR_PB 10
+// #define SENSOR_TO 9
+// #define SENSOR_PB 10
+#define SENSOR_TO A2
+#define SENSOR_PB A3
 
-#define PCP 8
+// #define PCP 8
+#define PCP A1
+
+const int Volune = A0;
  
-const uint8_t analogOutPins[] = {3,5,6,9,10,11};
+//const uint8_t analogOutPins[] = {3,5,6,9,10,11};
+const uint8_t analogOutPins[] = {3,5,6,A2,A3,A4};
 
 uint16_t RPM = 1700;
 uint16_t pulseHigh;
 uint16_t pulseLow;
+
+// SPI
+#define TFT_CS        10
+#define TFT_RST        8 // Or set to -1 and connect to Arduino RESET pin
+#define TFT_DC         7
+Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_RST);
 
 // forDebug
 static FILE uartout;
@@ -39,15 +54,24 @@ void RPM_Calc(){
 
   Serial.print("RPM: ");
   Serial.println(RPM);
+
+  // LCD Display
+  tft.fillScreen(ST77XX_BLACK);
+  tft.setCursor(0, 30);
+  tft.setTextColor(ST77XX_RED);
+  tft.setTextSize(5);
+  tft.println(RPM);
 }
 
 void Volune_Tune(){
   digitalWrite(PCP, LOW);
   digitalWrite(LED_BUILTIN, LOW);
 
-  uint16_t Value_HTL = analogRead( A0 );
+  uint16_t Value_HTL = analogRead( Volune );
   RPM = map(Value_HTL, 0, 1023, 3, 100) * 100;  // delayMicrosecondsが16383usec以上は正常に動かないため、下限を300rpm(OFF時間13889usec)に制限
   RPM_Calc();
+
+  delay(100);
 }
 
 void setup(){
@@ -56,8 +80,14 @@ void setup(){
   stdout = &uartout;
   
   // config serial
-  Serial.begin(SERIAL_RATE);
+  Serial.begin(SERIAL_RATE, SERIAL_8N1);
   Serial.setTimeout(SERIAL_TIMEOUT);
+
+  // LCD Setting
+  tft.init(170, 320);           // Init ST7789 170x320
+  //tft.init(240, 240);           // Init ST7789 240x240
+  tft.setRotation(1);
+  tft.setTextWrap(false);        // 行の折り返し無効
   
   // config output pin
   for(uint8_t i = 0; i<sizeof(analogOutPins); i++){
