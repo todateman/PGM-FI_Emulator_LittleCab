@@ -4,6 +4,15 @@
 * PGM-FI Emulator
 */
 
+#define BLACK 0x0000
+#define BLUE 0x001F
+#define RED 0xF800
+#define GREEN 0x07E0
+#define CYAN 0x07FF
+#define MAGENTA 0xF81F
+#define YELLOW 0xFFE0
+#define WHITE 0xFFFF
+
 #include <Adafruit_GFX.h>    // Core graphics library
 #include <Adafruit_ST7789.h> // Hardware-specific library for ST7789
 #include <Arduino.h>
@@ -34,8 +43,9 @@ uint16_t pulseLow;
 
 // SPI
 #define TFT_CS        10
-#define TFT_RST        8 // Or set to -1 and connect to Arduino RESET pin
-#define TFT_DC         7
+#define TFT_RST        9 // Or set to -1 and connect to Arduino RESET pin
+#define TFT_DC         8
+
 Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_RST);
 
 // forDebug
@@ -56,11 +66,13 @@ void RPM_Calc(){
   Serial.println(RPM);
 
   // LCD Display
-  tft.fillScreen(ST77XX_BLACK);
-  tft.setCursor(0, 30);
-  tft.setTextColor(ST77XX_RED);
-  tft.setTextSize(5);
+  tft.fillScreen(BLACK);
+  tft.setCursor(0, 80);
+  tft.setTextColor(RED);
+  tft.setTextSize(10);
   tft.println(RPM);
+  tft.drawRect(10, 200, 220, 30, WHITE);
+  tft.fillRect(10, 200, map(RPM, 0, 9900, 0, 220), 30, WHITE);
 }
 
 void Volune_Tune(){
@@ -68,7 +80,7 @@ void Volune_Tune(){
   digitalWrite(LED_BUILTIN, LOW);
 
   uint16_t Value_HTL = analogRead( Volune );
-  RPM = map(Value_HTL, 0, 1023, 3, 100) * 100;  // delayMicrosecondsが16383usec以上は正常に動かないため、下限を300rpm(OFF時間13889usec)に制限
+  RPM = map(Value_HTL, 0, 1023, 3, 99)*100;  // delayMicrosecondsが16383usec以上は正常に動かないため、下限を300rpm(OFF時間13889usec)に制限
   RPM_Calc();
 
   delay(100);
@@ -84,9 +96,9 @@ void setup(){
   Serial.setTimeout(SERIAL_TIMEOUT);
 
   // LCD Setting
-  tft.init(170, 320);           // Init ST7789 170x320
-  //tft.init(240, 240);           // Init ST7789 240x240
-  tft.setRotation(1);
+  //tft.init(tft.width(), tft.height());            // Init ST7789 170x320
+  tft.init(tft.width(), tft.height(), SPI_MODE2);   // Init ST7789 240x240
+  tft.setRotation(3);            // 画面回転
   tft.setTextWrap(false);        // 行の折り返し無効
   
   // config output pin
