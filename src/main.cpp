@@ -4,15 +4,6 @@
 * PGM-FI Emulator
 */
 
-#define BLACK 0x0000
-#define BLUE 0x001F
-#define RED 0xF800
-#define GREEN 0x07E0
-#define CYAN 0x07FF
-#define MAGENTA 0xF81F
-#define YELLOW 0xFFE0
-#define WHITE 0xFFFF
-
 #include <Adafruit_GFX.h>    // Core graphics library
 #include <Adafruit_ST7789.h> // Hardware-specific library for ST7789
 #include <Arduino.h>
@@ -24,29 +15,34 @@
 #define SENSOR_O2 3
 #define SENSOR_THL 5
 #define SENSOR_TA 6
-// #define SENSOR_TO 9
-// #define SENSOR_PB 10
+//#define SENSOR_TO 9
+//#define SENSOR_PB 10
+//#define PCP 8
+//const uint8_t analogOutPins[] = {3,5,6,9,10};
 #define SENSOR_TO A2
 #define SENSOR_PB A3
-
-// #define PCP 8
 #define PCP A1
+const uint8_t analogOutPins[] = {3,5,6,A2,A3};
 
 const int Volune = A0;
  
-//const uint8_t analogOutPins[] = {3,5,6,9,10,11};
-const uint8_t analogOutPins[] = {3,5,6,A2,A3,A4};
 
 uint16_t RPM = 1700;
 uint16_t pulseHigh;
 uint16_t pulseLow;
 
 // SPI
-#define TFT_CS        10
-#define TFT_RST        9 // Or set to -1 and connect to Arduino RESET pin
-#define TFT_DC         8
+#define TFT_CS    10
+#define TFT_RST   9  // Or set to -1 and connect to Arduino RESET pin
+#define TFT_DC    8
 
+// Hardware SPI
 Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_RST);
+
+// Software SPI
+// #define TFT_MOSI 11  // 11(SDA): Data out
+// #define TFT_SCLK 13  // 13(SCL): Clock out
+// Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_MOSI, TFT_SCLK, TFT_RST);
 
 // forDebug
 static FILE uartout;
@@ -66,13 +62,15 @@ void RPM_Calc(){
   Serial.println(RPM);
 
   // LCD Display
-  tft.fillScreen(BLACK);
   tft.setCursor(0, 80);
-  tft.setTextColor(RED);
+  tft.setTextColor(ST77XX_RED, ST77XX_BLACK);
   tft.setTextSize(10);
-  tft.println(RPM);
-  tft.drawRect(10, 200, 220, 30, WHITE);
-  tft.fillRect(10, 200, map(RPM, 0, 9900, 0, 220), 30, WHITE);
+  char buf[ 5 ];
+  sprintf (buf, "%4d" , RPM );
+  tft.print(buf);
+  tft.fillRect(10, 200, 220, 30, ST77XX_BLACK);
+  tft.drawRect(10, 200, 220, 30, ST77XX_WHITE);
+  tft.fillRect(10, 200, map(RPM, 0, 9900, 0, 220), 30, ST77XX_WHITE);
 }
 
 void Volune_Tune(){
@@ -96,10 +94,13 @@ void setup(){
   Serial.setTimeout(SERIAL_TIMEOUT);
 
   // LCD Setting
+  SPI.begin();
   //tft.init(tft.width(), tft.height());            // Init ST7789 170x320
-  tft.init(tft.width(), tft.height(), SPI_MODE2);   // Init ST7789 240x240
+  tft.init(240, 240, SPI_MODE2);   // Init ST7789 240x240
+  //tft.setSPISpeed(40000000);
   tft.setRotation(3);            // 画面回転
   tft.setTextWrap(false);        // 行の折り返し無効
+  tft.fillScreen(ST77XX_BLACK);
   
   // config output pin
   for(uint8_t i = 0; i<sizeof(analogOutPins); i++){
