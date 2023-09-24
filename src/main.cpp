@@ -15,26 +15,21 @@
 #define SENSOR_O2 3
 #define SENSOR_THL 5
 #define SENSOR_TA 6
-//#define SENSOR_TO 9
-//#define SENSOR_PB 10
-//#define PCP 8
-//const uint8_t analogOutPins[] = {3,5,6,9,10};
-#define SENSOR_TO A2
-#define SENSOR_PB A3
-#define PCP A1
-const uint8_t analogOutPins[] = {3,5,6,A2,A3};
+#define SENSOR_TO 9
+#define SENSOR_PB 10
+#define PCP 8
+const uint8_t analogOutPins[] = {3,5,6,9,10};
 
 const int Volune = A0;
- 
 
 uint16_t RPM = 1700;
 uint16_t pulseHigh;
 uint16_t pulseLow;
 
 // SPI
-#define TFT_CS    10
-#define TFT_RST   9  // Or set to -1 and connect to Arduino RESET pin
-#define TFT_DC    8
+#define TFT_CS    15
+#define TFT_RST   16  // Or set to -1 and connect to Arduino RESET pin
+#define TFT_DC    17
 
 // Hardware SPI
 Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_RST);
