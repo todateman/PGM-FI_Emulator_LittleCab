@@ -57,15 +57,15 @@ void RPM_Calc(){
   Serial.println(RPM);
 
   // LCD Display
-  tft.setCursor(0, 80);
+  tft.setCursor(0, 50);
   tft.setTextColor(ST77XX_RED, ST77XX_BLACK);
   tft.setTextSize(10);
   char buf[ 5 ];
   sprintf (buf, "%4d" , RPM );
   tft.print(buf);
-  tft.fillRect(10, 200, 220, 30, ST77XX_BLACK);
-  tft.drawRect(10, 200, 220, 30, ST77XX_WHITE);
-  tft.fillRect(10, 200, map(RPM, 0, 9900, 0, 220), 30, ST77XX_WHITE);
+  tft.fillRect(10, 150, 220, 30, ST77XX_BLACK);
+  tft.drawRect(10, 150, 220, 30, ST77XX_WHITE);
+  tft.fillRect(10, 150, map(RPM, 0, 9900, 0, 220), 30, ST77XX_WHITE);
 }
 
 void Volune_Tune(){
@@ -93,7 +93,7 @@ void setup(){
   //tft.init(tft.width(), tft.height());            // Init ST7789 170x320
   tft.init(240, 240, SPI_MODE2);   // Init ST7789 240x240
   //tft.setSPISpeed(40000000);
-  tft.setRotation(3);            // 画面回転
+  tft.setRotation(4);            // 画面回転
   tft.setTextWrap(false);        // 行の折り返し無効
   tft.fillScreen(ST77XX_BLACK);
   
