@@ -18,7 +18,7 @@
 #define SENSOR_TO 9
 #define SENSOR_PB 10
 #define PCP 8
-const uint8_t analogOutPins[] = {3,5,6,9,10};
+// const uint8_t analogOutPins[] = {3,5,6,9,10};
 
 const int Volune = A0;
 
@@ -98,9 +98,9 @@ void setup(){
   tft.fillScreen(ST77XX_BLACK);
   
   // config output pin
-  for(uint8_t i = 0; i<sizeof(analogOutPins); i++){
-    pinMode(analogOutPins[i], OUTPUT);
-  }
+  // for(uint8_t i = 0; i<sizeof(analogOutPins); i++){
+  //   pinMode(analogOutPins[i], OUTPUT);
+  // }
   pinMode(PCP, OUTPUT); // CrankPulse
   pinMode(2, INPUT_PULLUP);  // RPM_Tune_ON
   
@@ -138,4 +138,15 @@ void loop(){
       delayMicroseconds(pulseLow);
     }
   }
+
+  // LPFの検証用
+  /*
+  uint16_t Value_HTL = analogRead( Volune );
+  analogWrite(SENSOR_O2,  Value_HTL/4); //0-5v(0-255)
+  analogWrite(SENSOR_THL, Value_HTL/4); //0-5v(0-255)
+  analogWrite(SENSOR_TA,  Value_HTL/4); //0-5v(0-255)
+  analogWrite(SENSOR_TO,  Value_HTL/4); //0-5v(0-255)
+  analogWrite(SENSOR_PB,  Value_HTL/4); //0-5v(0-255)
+  */
+
 }
