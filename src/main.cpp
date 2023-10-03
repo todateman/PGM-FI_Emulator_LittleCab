@@ -20,11 +20,14 @@
 #define PCP 8
 // const uint8_t analogOutPins[] = {3,5,6,9,10};
 
-const int Volune = A0;
+const int Volune_PCP = A6;
+const int Volune_THL = A7;
 
 uint16_t RPM = 1700;
 uint16_t pulseHigh;
 uint16_t pulseLow;
+uint8_t THL = 22;
+uint8_t THL_per = 0;
 
 // SPI
 #define TFT_CS    15
@@ -54,26 +57,42 @@ void RPM_Calc(){
   pulseLow = 5000000 / RPM - pulseHigh;   //pulseLow = (60 / RPM * 1000 / 12) * 1000 - pulseHigh;
 
   Serial.print("RPM: ");
-  Serial.println(RPM);
+  Serial.print(RPM);
+  Serial.print("rpm\tTHL: ");
+  Serial.print(THL_per);
+  Serial.println("%");
 
   // LCD Display
-  tft.setCursor(0, 50);
   tft.setTextColor(ST77XX_RED, ST77XX_BLACK);
   tft.setTextSize(10);
-  char buf[ 5 ];
-  sprintf (buf, "%4d" , RPM );
-  tft.print(buf);
-  tft.fillRect(10, 150, 220, 30, ST77XX_BLACK);
-  tft.drawRect(10, 150, 220, 30, ST77XX_WHITE);
-  tft.fillRect(10, 150, map(RPM, 0, 9900, 0, 220), 30, ST77XX_WHITE);
+
+  tft.setCursor(0, 20);
+  char buf_RPM[ 5 ];
+  sprintf (buf_RPM, "%4d" , RPM );
+  tft.print(buf_RPM);
+  tft.fillRect(10, 100, 220, 5, ST77XX_BLACK);
+  tft.fillRect(10, 100, map(RPM, 0, 9900, 0, 220), 5, ST77XX_WHITE);
+
+  tft.setCursor(0, 120);
+  char buf_THL[ 4 ];
+  sprintf (buf_THL, "%3d" , THL_per );
+  tft.print(buf_THL);
+  tft.fillRect(10, 200, 220, 5, ST77XX_BLACK);
+  tft.fillRect(10, 200, map(THL_per, 0, 100, 0, 220), 5, ST77XX_WHITE);
 }
 
 void Volune_Tune(){
   digitalWrite(PCP, LOW);
   digitalWrite(LED_BUILTIN, LOW);
 
-  uint16_t Value_HTL = analogRead( Volune );
-  RPM = map(Value_HTL, 0, 1023, 3, 99)*100;  // delayMicrosecondsが16383usec以上は正常に動かないため、下限を300rpm(OFF時間13889usec)に制限
+  uint16_t Value_PCP = analogRead( Volune_PCP );
+  RPM = map(Value_PCP, 0, 1023, 3, 99)*100;  // delayMicrosecondsが16383usec以上は正常に動かないため、下限を300rpm(OFF時間13889usec)に制限
+
+  uint16_t Value_THL = analogRead( Volune_THL ) ;
+  THL_per = map(Value_THL, 0, 1023, 0, 20)*5;   // 0-1023を0-100(5刻み)に置換
+  THL = map (THL_per, 0, 100, 21, 245);      // 0-100を21-245に置換
+  analogWrite(SENSOR_THL, THL);              // 0.4-4.8V(21-245)
+
   RPM_Calc();
 
   delay(100);
@@ -106,7 +125,7 @@ void setup(){
   
   // sensor initial value
   analogWrite(SENSOR_O2, 25); //0-1v(0-51)
-  analogWrite(SENSOR_THL, 22); //0.4-4.8V(21-245)
+  analogWrite(SENSOR_THL, THL); //0.4-4.8V(21-245)
   analogWrite(SENSOR_TA, 138); //2.7-3.1V(138-158)
   analogWrite(SENSOR_TO, 138); //2.7-3.1V(138-158)
   analogWrite(SENSOR_PB, 138); //2.7-3.1V(138-158)
@@ -141,12 +160,12 @@ void loop(){
 
   // LPFの検証用
   /*
-  uint16_t Value_HTL = analogRead( Volune );
-  analogWrite(SENSOR_O2,  Value_HTL/4); //0-5v(0-255)
-  analogWrite(SENSOR_THL, Value_HTL/4); //0-5v(0-255)
-  analogWrite(SENSOR_TA,  Value_HTL/4); //0-5v(0-255)
-  analogWrite(SENSOR_TO,  Value_HTL/4); //0-5v(0-255)
-  analogWrite(SENSOR_PB,  Value_HTL/4); //0-5v(0-255)
+  uint16_t Value_PCP = analogRead( Volune_PCP );
+  analogWrite(SENSOR_O2,  Value_PCP/4); //0-5v(0-255)
+  analogWrite(SENSOR_THL, Value_PCP/4); //0-5v(0-255)
+  analogWrite(SENSOR_TA,  Value_PCP/4); //0-5v(0-255)
+  analogWrite(SENSOR_TO,  Value_PCP/4); //0-5v(0-255)
+  analogWrite(SENSOR_PB,  Value_PCP/4); //0-5v(0-255)
   */
 
 }
