@@ -23,7 +23,7 @@
 const int Volune_PCP = A6;
 const int Volune_THL = A7;
 
-uint16_t RPM = 1700;
+uint16_t RPM = 5000;  // 初期回転数
 uint16_t pulseHigh;
 uint16_t pulseLow;
 uint8_t THL = 22;
